@@ -1,1 +1,5 @@
-Feature-1: Imported base code (lsv1.0.0.c) into src/. Created directories (src, bin, obj, man) and added Makefile. Built project using make. Successfully executed ./bin/ls which displayed the directory contents.
+Feature-2:
+Enhanced lsv1.0.0 to support:
+ -a : show hidden files (starting with .)
+ -l : show file sizes in bytes
+Tested using ./bin/ls, ./bin/ls -a, ./bin/ls -l, ./bin/ls -a -l

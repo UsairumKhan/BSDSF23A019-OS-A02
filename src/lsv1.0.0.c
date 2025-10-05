@@ -1,12 +1,13 @@
 /*
-* Programming Assignment 02: lsv1.0.0
-* This is the source file of version 1.0.0
-* Read the write-up of the assignment to add the features to this base version
-* Usage:
-*       $ lsv1.0.0 
-*       % lsv1.0.0  /home
-*       $ lsv1.0.0  /home/kali/   /etc/
+* Programming Assignment 02: lsv1.0.0 (Feature 2)
+* Added -a (show hidden) and -l (show file size)
+* Usage Examples:
+*       ./bin/ls
+*       ./bin/ls -a
+*       ./bin/ls -l
+*       ./bin/ls -a -l /home
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -17,47 +18,67 @@
 
 extern int errno;
 
-void do_ls(const char *dir);
+// updated function prototype
+void do_ls(const char *dir, int show_all, int long_list);
 
 int main(int argc, char const *argv[])
 {
-    if (argc == 1)
-    {
-        do_ls(".");
+    int show_all = 0;   // for -a
+    int long_list = 0;  // for -l
+
+    // check for -a and -l flags
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-a") == 0)
+            show_all = 1;
+        else if (strcmp(argv[i], "-l") == 0)
+            long_list = 1;
     }
-    else
-    {
-        for (int i = 1; i < argc; i++)
-        {
-            printf("Directory listing of %s : \n", argv[i]);
-            do_ls(argv[i]);
-	    puts("");
+
+    // if no directory is given, or only flags are used
+    if (argc == 1 || (argc == 2 && (show_all || long_list)))
+        do_ls(".", show_all, long_list);
+    else {
+        for (int i = 1; i < argc; i++) {
+            if (argv[i][0] == '-')  // skip flags
+                continue;
+            printf("Directory listing of %s :\n", argv[i]);
+            do_ls(argv[i], show_all, long_list);
+            puts("");
         }
     }
     return 0;
 }
 
-void do_ls(const char *dir)
+void do_ls(const char *dir, int show_all, int long_list)
 {
     struct dirent *entry;
     DIR *dp = opendir(dir);
-    if (dp == NULL)
-    {
+    if (dp == NULL) {
         fprintf(stderr, "Cannot open directory : %s\n", dir);
         return;
     }
+
     errno = 0;
-    while ((entry = readdir(dp)) != NULL)
-    {
-        if (entry->d_name[0] == '.')
+    while ((entry = readdir(dp)) != NULL) {
+        // skip hidden files unless -a is used
+        if (!show_all && entry->d_name[0] == '.')
             continue;
-        printf("%s\n", entry->d_name);
+
+        if (long_list) {
+            struct stat fileStat;
+            char path[1024];
+            snprintf(path, sizeof(path), "%s/%s", dir, entry->d_name);
+            if (stat(path, &fileStat) == 0)
+                printf("%10ld  %s\n", fileStat.st_size, entry->d_name);
+            else
+                printf("%s\n", entry->d_name);
+        } else {
+            printf("%s\n", entry->d_name);
+        }
     }
 
     if (errno != 0)
-    {
         perror("readdir failed");
-    }
 
     closedir(dp);
 }
