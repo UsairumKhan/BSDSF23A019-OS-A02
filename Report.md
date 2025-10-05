@@ -1,5 +1,0 @@
-Feature-1:
-Imported base code (lsv1.0.0.c) into src/.
-Created directories (src, bin, obj, man) and added Makefile.
-Built project using make.
-Successfully executed ./bin/ls which displayed the directory contents.
